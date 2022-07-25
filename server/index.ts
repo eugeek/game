@@ -1,11 +1,6 @@
-import express, { Express, Request, Response } from 'express';
-import { router } from './routes';
+import dotenv from 'dotenv';
+dotenv.config();
+import DataSource from './src/database';
+import App from './src/app';
 
-const app: Express = express();
-const PORT: number = 3002;
-
-app.use('/', router);
-
-app.listen(PORT, () => {
-    console.log(`> Server has been started on ${PORT} port`);
-});
+DataSource.initialize().then((conn) => App);
