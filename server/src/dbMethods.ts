@@ -21,6 +21,24 @@ const createToken = () => {
     });
 };
 
+const checkPassword = (reqPassword: string, foundUser: User) => {
+    return new Promise((resolve, reject) =>
+        bcrypt.compare(
+            reqPassword,
+            foundUser.password_digest,
+            (err, response) => {
+                if (err) {
+                    reject(err);
+                } else if (response) {
+                    resolve(response);
+                } else {
+                    reject(new Error('Passwords do not match.'));
+                }
+            }
+        )
+    );
+};
+
 const createUser = async (payload: {
     name: string;
     token: string;
@@ -35,7 +53,7 @@ export const signUp = async (req: Request, res: Response) => {
     const user = req.body;
     if (!user.password || !user.name)
         res.status(400).send({
-            msg: 'Please enter email and password.',
+            msg: 'Please enter name and password.',
         });
 
     user.password_digest = await hashPassword(user.password);
@@ -44,6 +62,19 @@ export const signUp = async (req: Request, res: Response) => {
 
     const newUser = await createUser(user);
     res.status(200).send(newUser);
+};
+
+export const signIn = async (req: Request, res: Response) => {
+    const user = req.body;
+    if (!user.password || !user.name)
+        res.status(400).send({
+            msg: 'Please enter name and password.',
+        });
+
+    const userRepository = database.getRepository(User);
+    const foundUser = await userRepository.find({ where: { name: user.name } });
+    // const checkedPassword = await checkPassword(user.password, foundUser[0]);
+    console.log(foundUser);
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {

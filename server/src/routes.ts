@@ -1,5 +1,5 @@
 import express, { IRouter, Request, Response } from 'express';
-import { getAllUsers, signUp } from './auth';
+import { getAllUsers, signIn, signUp } from './dbMethods';
 
 export const router: IRouter = express.Router();
 
@@ -8,5 +8,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 router.post('/signup', signUp);
+
+router.post('/signin', signIn);
 
 router.post('/users', getAllUsers);

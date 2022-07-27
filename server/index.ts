@@ -1,6 +1,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import DataSource from './src/database';
-import App from './src/app';
+import database from './src/database';
+import expressApp from './src/app';
 
-DataSource.initialize().then((conn) => App);
+const PORT: number = Number(process.env.PORT) || 3002;
+
+database
+    .initialize()
+    .then((conn) =>
+        expressApp.listen(PORT, () =>
+            console.log(`> Server has started!\n> http://localhost:${PORT}`)
+        )
+    );
