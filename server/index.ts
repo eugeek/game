@@ -12,4 +12,4 @@ database
             console.log(`> Server has started!\n> http://localhost:${PORT}`)
         )
     )
-    .catch(err => console.log(err))
+    .catch(err => console.log(err));

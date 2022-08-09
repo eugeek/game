@@ -56,34 +56,29 @@ const updateUserToken = async (token: string, user: User) => {
 
 export const signUp = async (req: Request, res: Response) => {
     const user = req.body;
-    if (!user.password || !user.name)
-        res.status(400).send({
-            msg: 'Please enter name and password.',
-        });
+    if (!user.password || !user.name) return res.status(400).send({
+        msg: 'Please enter name and password.',
+    });
 
     user.password_digest = await hashPassword(user.password);
     user.token = await createToken();
     delete user.password;
 
     const newUser = await createUser(user);
-    res.status(200).send(newUser);
+    return res.status(200).send(newUser);
 };
 
 export const signIn = async (req: Request, res: Response) => {
     const user = req.body;
-    if (!user.password || !user.name)
-        res.status(400).send({
-            msg: 'Please enter name and password.',
-        });
+    if (!user.password || !user.name) return res.status(400).send({
+        msg: 'Please enter name and password.',
+    });
 
     const userRepository = database.getRepository(User);
     const foundUser = await userRepository.findOne({ where: { name: user.name } });
-    if (!foundUser) {
-        res.status(400).send({
-            msg: 'User not found.',
-        });
-        return;
-    }
+    if (!foundUser) return res.status(400).send({
+        msg: 'User not found.',
+    });
     const checkedPassword = await checkPassword(user.password, foundUser);
     if (!checkedPassword) return res.status(400).send({ msg: 'Password is not current.' });
     const token = await createToken();
@@ -97,5 +92,5 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const userRepository = database.getRepository(User);
     const users = await userRepository.find();
 
-    res.status(200).send(users);
+    return res.status(200).send(users);
 };
