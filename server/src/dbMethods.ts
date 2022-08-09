@@ -49,6 +49,11 @@ const createUser = async (payload: {
     return await userRepository.save({ ...user, ...payload });
 };
 
+const updateUserToken = async (token: string, user: User) => {
+    const userRepository = database.getRepository(User);
+    return await userRepository.save({ ...user, token });
+};
+
 export const signUp = async (req: Request, res: Response) => {
     const user = req.body;
     if (!user.password || !user.name)
@@ -72,9 +77,20 @@ export const signIn = async (req: Request, res: Response) => {
         });
 
     const userRepository = database.getRepository(User);
-    const foundUser = await userRepository.find({ where: { name: user.name } });
-    // const checkedPassword = await checkPassword(user.password, foundUser[0]);
-    console.log(foundUser);
+    const foundUser = await userRepository.findOne({ where: { name: user.name } });
+    if (!foundUser) {
+        res.status(400).send({
+            msg: 'User not found.',
+        });
+        return;
+    }
+    const checkedPassword = await checkPassword(user.password, foundUser);
+    if (!checkedPassword) return res.status(400).send({ msg: 'Password is not current.' });
+    const token = await createToken();
+    if (typeof token !== 'string') return;
+    const loggedInUser: { id: number; name: string; token: string; password_digest?: string; created_at: Date } = await updateUserToken(token, foundUser);
+    delete loggedInUser.password_digest;
+    return res.status(200).send(loggedInUser);
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {

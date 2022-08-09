@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import bp from 'body-parser';
 import { router } from './routes';
 

@@ -11,4 +11,5 @@ database
         expressApp.listen(PORT, () =>
             console.log(`> Server has started!\n> http://localhost:${PORT}`)
         )
-    );
+    )
+    .catch(err => console.log(err))
