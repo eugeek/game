@@ -56,16 +56,22 @@ const updateUserToken = async (token: string, user: User) => {
 
 export const signUp = async (req: Request, res: Response) => {
     const user = req.body;
-    if (!user.password || !user.name) return res.status(400).send({
-        msg: 'Please enter name and password.',
+    if (!user.password || !user.name || !user.email) return res.status(400).send({
+        msg: 'Please enter name, email and password.',
     });
+    try {
+        user.password_digest = await hashPassword(user.password);
+        user.token = await createToken();
+        delete user.password;
+        const newUser: { id: number; name: string; token: string; password_digest?: string; created_at: Date } = await createUser(user);
 
-    user.password_digest = await hashPassword(user.password);
-    user.token = await createToken();
-    delete user.password;
+        delete newUser.password_digest;
+        return res.status(200).send(newUser);
+    } catch (error) {
+        console.error(error);
+        return res.status(400);
+    }
 
-    const newUser = await createUser(user);
-    return res.status(200).send(newUser);
 };
 
 export const signIn = async (req: Request, res: Response) => {
@@ -73,19 +79,24 @@ export const signIn = async (req: Request, res: Response) => {
     if (!user.password || !user.name) return res.status(400).send({
         msg: 'Please enter name and password.',
     });
+    try {
+        const userRepository = database.getRepository(User);
+        const foundUser = await userRepository.findOne({ where: { name: user.name } });
+        if (!foundUser) return res.status(400).send({
+            msg: 'User not found.',
+        });
+        const checkedPassword = await checkPassword(user.password, foundUser);
+        if (!checkedPassword) return res.status(400).send({ msg: 'Password is not current.' });
+        const token = await createToken();
+        if (typeof token !== 'string') return;
+        const loggedInUser: { id: number; name: string; token: string; password_digest?: string; created_at: Date } = await updateUserToken(token, foundUser);
+        delete loggedInUser.password_digest;
+        return res.status(200).send(loggedInUser);
+    } catch (error) {
+        console.error(error);
+        return res.status(400);
+    }
 
-    const userRepository = database.getRepository(User);
-    const foundUser = await userRepository.findOne({ where: { name: user.name } });
-    if (!foundUser) return res.status(400).send({
-        msg: 'User not found.',
-    });
-    const checkedPassword = await checkPassword(user.password, foundUser);
-    if (!checkedPassword) return res.status(400).send({ msg: 'Password is not current.' });
-    const token = await createToken();
-    if (typeof token !== 'string') return;
-    const loggedInUser: { id: number; name: string; token: string; password_digest?: string; created_at: Date } = await updateUserToken(token, foundUser);
-    delete loggedInUser.password_digest;
-    return res.status(200).send(loggedInUser);
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {
