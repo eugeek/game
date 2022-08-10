@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
     const [name, setName] = useState('');
@@ -24,8 +25,21 @@ export default function SignUp() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const signUp = () => {
-        // sign up 
+    const navigate = useNavigate();
+
+    const signUp = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const result = await fetch('http://localhost:3002/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await result.json();
+        console.log(data);
     };
 
     return (
@@ -73,10 +87,10 @@ export default function SignUp() {
                             <Button
                                 loadingText="Submitting"
                                 size="lg"
-                                bg={'blue.400'}
+                                bg={'pink.400'}
                                 color={'white'}
                                 _hover={{
-                                    bg: 'blue.500',
+                                    bg: 'pink.500',
                                 }}
                                 onClick={signUp}
                             >
@@ -85,7 +99,7 @@ export default function SignUp() {
                         </Stack>
                         <Stack pt={6}>
                             <Text align={'center'}>
-                                Already have an account? <Link color={'blue.400'}>Sign in</Link>
+                                Already have an account? <Link color={'pink.400'} onClick={() => navigate('/signin')}>Sign in</Link>
                             </Text>
                         </Stack>
                     </Stack>

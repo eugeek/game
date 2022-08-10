@@ -3,15 +3,20 @@ import {
     Column,
     PrimaryGeneratedColumn,
     CreateDateColumn,
+    Unique
 } from 'typeorm';
 
-@Entity()
+@Entity('users')
+@Unique(["name", "email"])
 export class User {
     @PrimaryGeneratedColumn()
     id!: number;
 
     @Column()
     name!: string;
+
+    @Column()
+    email!: string;
 
     @Column()
     token!: string;
