@@ -3,12 +3,13 @@ import {
     Column,
     PrimaryGeneratedColumn,
     CreateDateColumn,
-    Unique
+    Unique,
+    BaseEntity
 } from 'typeorm';
 
 @Entity('users')
 @Unique(["name", "email"])
-export class User {
+export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
