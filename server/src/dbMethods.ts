@@ -44,14 +44,11 @@ const createUser = async (payload: {
     token: string;
     password_digest: string;
 }) => {
-    const userRepository = database.getRepository(User);
-    const user = new User();
-    return await userRepository.save({ ...user, ...payload });
+    return await User.save({ ...payload });
 };
 
 const updateUserToken = async (token: string, user: User) => {
-    const userRepository = database.getRepository(User);
-    return await userRepository.save({ ...user, token });
+    return await User.save({ ...user, token });
 };
 
 export const signUp = async (req: Request, res: Response) => {
@@ -80,8 +77,7 @@ export const signIn = async (req: Request, res: Response) => {
         msg: 'Please enter name and password.',
     });
     try {
-        const userRepository = database.getRepository(User);
-        const foundUser = await userRepository.findOne({ where: { name: user.name } });
+        const foundUser = await User.findOne({ where: { name: user.name } });
         if (!foundUser) return res.status(400).send({
             msg: 'User not found.',
         });
@@ -100,8 +96,6 @@ export const signIn = async (req: Request, res: Response) => {
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {
-    const userRepository = database.getRepository(User);
-    const users = await userRepository.find();
-
-    return res.status(200).send(users);
+    const users = await User.createQueryBuilder('user').select(['user.name', 'user.created_at']).getManyAndCount();
+    res.status(200).send(users);
 };

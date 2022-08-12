@@ -5,11 +5,16 @@ import expressApp from './src/app';
 
 const PORT: number = Number(process.env.PORT) || 3002;
 
-database
-    .initialize()
-    .then((conn) =>
+const main = async () => {
+    try {
+        await database.initialize();
+        console.log('> Database connected!');
         expressApp.listen(PORT, () =>
             console.log(`> Server has started!\n> http://localhost:${PORT}`)
-        )
-    )
-    .catch(err => console.log(err));
+        );
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+main();
